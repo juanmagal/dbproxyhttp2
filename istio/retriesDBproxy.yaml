@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: dbproxyhttp2-retries
+spec:
+  hosts:
+  - dbproxyhttp2
+  http:
+  - route:
+    - destination:
+        host: dbproxyhttp2
+        subset: v1
+    retries:
+      attempts: 20
+      perTryTimeout: 3s

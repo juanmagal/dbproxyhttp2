@@ -5,12 +5,12 @@ services:
        links:
            - "udrsim"
        ports:
-           - "9084:9084"
+           - 9094:9094"
        networks:
            backend:
              ipv4_address: 172.16.238.4
        environment:
-           - DBPROXY2PORT=9084
+           - DBPROXY2PORT=9094
     udrsim:
         image: "udrsim:latest"
         ports:

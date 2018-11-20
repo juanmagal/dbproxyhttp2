@@ -2,7 +2,7 @@
 
 Simple simulator of the AMF discover service.
 
-It publishes a HTTP2 REST API in port 9084 to simulate the post method of the AMF discover service.
+It publishes a HTTP2 REST API in port 9094 to simulate the post method of the AMF discover service.
 
 ## Dependencies
 
@@ -35,7 +35,7 @@ The AMFSIM reads these environment variables
 
 To test the server it is recommended to use the nghttp client installed with the nghttp2 - HTTP/2 C Library
 
-* nghttp  -H':method: GET' <https://localhost:9084/> --verbose
+* nghttp  -H':method: GET' <https://localhost:9094/> --verbose
 ```
 
 ## Compile

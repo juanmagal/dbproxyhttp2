@@ -43,7 +43,7 @@ using namespace nghttp2::asio_http2::server;
 static const int URI_PARAM_SIZE = 5;
 static const char *DEFAULT_ADDRESS = "0.0.0.0";
 
-static const char *DEFAULT_PORT = "9084";
+static const char *DEFAULT_PORT = "9094";
 static const char *ENV_PORT = "AMFSIMPORT";
 
 enum { IO_NONE, WANT_READ, WANT_WRITE };
@@ -697,7 +697,7 @@ int main(int argc, char *argv[]) {
   }
 
   http2 server;
-  server.num_threads(get_nprocs());
+  // server.num_threads(get_nprocs());
 
   server.handle("/", [](const request &req, const response &res) {
     std::stringstream os;
@@ -720,7 +720,7 @@ int main(int argc, char *argv[]) {
     SSL_library_init();
 
     rv = parse_uri(&uri,
-                   "https://udrsimhttp2:9082/nudr-dr/v1/subscription-data/"
+                   "https://udrsimhttp2:9092/nudr-dr/v1/subscription-data/"
                    "imsi-0001/context-data/amf-3gpp-access");
     if (rv != 0) {
       die("parse_uri failed");
