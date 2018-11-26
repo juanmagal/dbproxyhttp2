@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: eecreatesubscription-circuitbreaker
+spec:
+  host: eecreatesubscription
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 10
+      http:
+         http2MaxRequests: 100
+         maxRequestsPerConnection: 10
+         maxRetries: 10
+    outlierDetection:
+      consecutiveErrors: 1
+      interval: 1s
+      baseEjectionTime: 3m
+      maxEjectionPercent: 100

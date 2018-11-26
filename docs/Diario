@@ -1,0 +1,134 @@
+*Martes 30 de Octubre
+Creación de las maquinas virtuales Master y Workers(2)
+
+*Miercoles 31 de Octubre
+Comunnicación entre las VM por ssh
+
+*Jueves 1 de Noviembre
+Instalacion de kubeadm, kubectl, kubelet y asociacion de workers a master
+
+* Viernes 2 de noviembre
+Test in Centos
+
+*Sabado 3 de noviembre. 
+Test Calico y Flame. Parece que tengo ya una instalación Ready aunque tengo crashloopback en calico nodes
+
+*Domingo 4 de noviembre. 
+Calico Up & running
+
+*Lunes 5 de noviembre. 
+Seteo de workers y master en la misma red
+
+*Martes 6 de noviembre. 
+Instalación de helm, istio, test runner y base de datos
+
+*Miercoles 7 de noviembre. 
+Acceso a un microservicio desde el exterior (webhooks de istio)
+
+*Jueves 8 de noviembre. 
+Analizando problemas de acceso desde el exterior
+Analizando primeros resultados CPS para SBA (REST/GRPC) siendo bastante malos 1 CPS.
+Creacion de un despliegue con un solo microservicio con acceso REST y siendo mejores los resultados 800 CPS
+Dimensionando replicasets de microservicios 
+Tirando workers y viendo que pasa.
+Creación de un repo en docker hub.
+Despliegue de un microservicio REST HTTP1 desde docker hub
+
+*Viernes 9 de noviembre. 
+Despliegue de un servicio SBA based con 3 microservicios todos con comunicacion REST HTTP/1.1
+Analizando con httperf el perfomance alcanzado para 1000 peticiones dando un máximo de 160 CPS
+Observo que los 3 microservicios se han repartido 2/1 entre los workers.
+
+*Domingo 11 de noviembre. 
+Añadiendo HTTP2 al servicio desplegado
+
+*Lunes 12 de nomviembre
+Añadir metrics server
+
+*Martes 13 de noviembre
+Incrementar el storage del cluster
+Pruebas de rendimiento y primeras demostraciones de escalado
+
+*Miercoles 14 de noviembre
+Revisión problemas de rendimiento UDRsim
+
+*Jueves 15 de noviembre
+Revisión problemas de rendimiento UDRsim
+
+*Viernes 16 de noviembre
+Affinity rules  
+Revisión problemas de rendimiento UDRsim
+
+*Domingo 18 de noviembre
+Comprobando que teniendo todos los microservicios en el mismo worker se incrementa el rendimiento un 30%
+Configurando reglas de escalabilidad para que no se pierda tráfico . Consigo meter 40000 peticiones sin perder nada.
+
+*Lunes 19 de noviembre
+
+Charla con Juanama
+
+Ir cubriendo estos puntos
+
+1.- Asegurar redundancia (Anti affinity rules)
+2.- Distribución (CPU memoria)
+    # Resources for the sidecar.
+    resources:
+      requests:
+        cpu: 10m
+      #  memory: 128Mi
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+
+3.- Load Balancing (istio/envoy/pesos)
+4.- Scale In /out (algoritmo Pablo)
+
+
+Termino el 1 y el 2
+
+
+*Martes 20 de noviembre
+*Miercoles 21 de noviembre
+*Jueves 22 de noviembre
+*Viernes 23 de noviembre
+
+--------Empezamos a jugar con Istio
+
+---Definir circuit breaker y los Retries
+https://istio.io/docs/reference/config/istio.networking.v1alpha3/#DestinationRule
+ConnectionPoolSetting
+OutlierDetection
+HTTP Retry
+
+
+
+* Domingo 25 de Noviembre
+Configure Liveness and Readiness Probes
+
+
+
+---Bondades de Istio
+Balanceo de carga automático para el tráfico HTTP, gRPC, WebSocket y TCP.
+Control detallado del comportamiento del tráfico con reglas de enrutamiento enriquecidas, reintentos, failovers e inyección de fallas.
+Una capa de política conectable y una API de configuración que admiten controles de acceso, límites de tasa y cuotas.
+Métricas automáticas, registros y rastreos para todo el tráfico dentro de un clúster, incluida la entrada y salida del clúster.
+
+
+
+////COMO CALCULAR LOS 99999999%/////////
+https://en.wikipedia.org/wiki/Availability_(system)
+http://pts-media.com/wpp/APC/APC%20-%20Mean%20Time%20Between%20Failure%20Explanation%20and%20Standards.pdf 
+http://www.applied-statistics.org/MTBF_Calculation.html 
+https://books.google.es/books?id=18t1DwAAQBAJ&pg=PA302&lpg=PA302&dq=mtbf+mttr+kubernetes&source=bl&ots=dU6sodsoRG&sig=QDk4F9btqjGSqRQjQDDMSwegFwg&hl=es&sa=X&ved=2ahUKEwipj4r-oePeAhVrCsAKHcmxCkwQ6AEwAXoECAEQAQ#v=onepage&q=mtbf%20mttr%20kubernetes&f=false 
+https://www.mech.kuleuven.be/lce2006/154.pdf 
+
+Comunicación segura de servicio a servicio en un clúster con autenticación y autorización sólidas basadas en identidad.
+
+
+TODO
+
+Metricas en HPA (usar beta2)
+
+Istio:Rate limiting (throttling) execution in Ingress Controller
+Istio:Devolver tráfico cuando se alcance un umbral de CPU o memoria con Istio
