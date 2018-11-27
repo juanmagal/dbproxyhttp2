@@ -7,13 +7,13 @@ spec:
   trafficPolicy:
     connectionPool:
       tcp:
-        maxConnections: 10
+        maxConnections: 100
       http:
-         http2MaxRequests: 100
-         maxRequestsPerConnection: 10
-         maxRetries: 10
+         http2MaxRequests: 10000
+         maxRequestsPerConnection: 100
+         maxRetries: 300
     outlierDetection:
-      consecutiveErrors: 1
-      interval: 1s
-      baseEjectionTime: 3m
+      consecutiveErrors: 250
+      interval: 10s
+      baseEjectionTime: 1m
       maxEjectionPercent: 100

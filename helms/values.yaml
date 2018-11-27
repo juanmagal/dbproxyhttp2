@@ -12,7 +12,7 @@ tags:
 global:
   image:
     repository: efrramo
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   upgradeStrategy:
     type: RollingUpdate # can be Recreate or RollingUpdate. In the latter, specify maxSurge and maxUnavailable
     rollingUpdate:

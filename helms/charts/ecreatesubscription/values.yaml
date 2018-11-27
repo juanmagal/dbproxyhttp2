@@ -1,10 +1,10 @@
 replicaCount: 4
-# hpa:
-#   replicas:
-#     min: 4
-#     max: 4
-#   target:
-#     cpu: 70
+hpa:
+  replicas:
+    min: 4
+    max: 4
+  target:
+    cpu: 70
 resources:
   requests:
     cpu: 100m
@@ -48,7 +48,7 @@ sidecars:
 global:
   image:
     repository: efrramo
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   istio:
     enabled: "on-auto-inj" # Service mesh sidecar auto injection. Values=on-auto-inj|off
     gateway:
