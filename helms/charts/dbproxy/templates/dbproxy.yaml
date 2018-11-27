@@ -1,0 +1,155 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: {{ .Values.service.name }}
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: {{ .Values.global.upgradeStrategy.type }}
+    {{- if eq .Values.global.upgradeStrategy.type "RollingUpdate" }}
+    rollingUpdate:
+      maxSurge: {{ .Values.global.upgradeStrategy.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.global.upgradeStrategy.rollingUpdate.maxUnavailable }}
+    {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.service.name }}
+      annotations:
+        {{- if eq .Values.global.istio.enabled "on-auto-inj" }}
+        sidecar.istio.io/inject: "true"
+        {{- else }}
+        sidecar.istio.io/inject: "false"
+        {{- end }}
+    spec:
+      volumes:
+      - name: schema-volume
+        configMap:
+          name: eric-udm-dbproxy-schema
+      containers:
+      - name: {{ .Chart.Name }}
+        image: {{ .Values.global.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.port.grpc }}
+        - containerPort: {{ .Values.env.http2 }}
+        args:
+        - -port
+        - {{ .Values.service.port.grpc | quote }}
+        - -httpport
+        - {{ .Values.env.http2 | quote }}
+        - -logproxy
+        - {{ printf "localhost:%v" .Values.sidecars.logproxy.port.grpc | quote }}
+        - -healthproxy
+        - {{ printf "localhost:%v" .Values.sidecars.healthproxy.port.grpc | quote }}
+        - -healthperiod
+        - {{ .Values.sidecars.healthproxy.service.period | quote }}
+        - -nrfdisc
+        - {{ .Values.nrfagent.discovery.endpoint | quote }}
+        - -kafkaendpoint
+        - {{ .Values.global.adp.mb.endpoint | quote }}
+        - -kafkatopic
+        - {{ .Values.nrfagent.discovery.topic | quote }}
+        {{- if .Values.env.simulator.enabled }}
+        - -simulator
+        - {{ .Values.env.simulator.endpoint | quote }}
+        {{- end}}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+      - name: {{ .Values.sidecars.logproxy.service.name }}
+        image: {{ .Values.global.image.repository }}/{{ .Values.sidecars.logproxy.image.name }}:{{ .Values.sidecars.logproxy.image.tag }}
+        imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.sidecars.logproxy.port.grpc }}
+        args:
+        - -port
+        - {{ .Values.sidecars.logproxy.port.grpc | quote }}
+        - -serviceid
+        - {{ .Values.service.name | quote }}
+        - -networkfunction
+        - "UDM"
+        resources:
+{{ toYaml .Values.sidecars.logproxy.resources | indent 10 }}
+      - name: {{ .Values.sidecars.healthproxy.service.name }}
+        image: {{ .Values.global.image.repository }}/{{ .Values.sidecars.healthproxy.image.name }}:{{ .Values.sidecars.healthproxy.image.tag }}
+        imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.sidecars.healthproxy.port.grpc }}
+        - containerPort: {{ .Values.sidecars.healthproxy.port.http }}
+        args:
+        - -httpport
+        - {{ .Values.sidecars.healthproxy.port.http | quote }}
+        - -grpcport
+        - {{ .Values.sidecars.healthproxy.port.grpc | quote }}
+        readinessProbe:
+          exec:
+            command:
+            - curl
+            - -f
+            - http://localhost:{{ .Values.sidecars.healthproxy.port.http }}/ready
+          initialDelaySeconds: {{ .Values.sidecars.healthproxy.service.initialDelay }}
+          periodSeconds: {{ .Values.sidecars.healthproxy.service.period }}
+        resources:
+{{ toYaml .Values.sidecars.healthproxy.resources | indent 10 }}
+      - name: {{ .Values.sidecars.oaivalidator.service.name }}
+        image: {{ .Values.global.image.repository }}/{{ .Values.sidecars.oaivalidator.image.name }}:{{ .Values.sidecars.oaivalidator.image.tag }}
+        imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.sidecars.oaivalidator.port.http }}
+        args:
+        - -port
+        - {{ .Values.sidecars.oaivalidator.port.http | quote }}
+        - -schema
+        - /root/EIPS_Nudr_DR_UDM.yaml
+        - -forwarder
+        - {{ printf "localhost:%v" .Values.env.http2 | quote }}
+        volumeMounts:
+        - name: schema-volume
+          mountPath: /root/
+        resources:
+{{ toYaml .Values.sidecars.oaivalidator.resources | indent 10 }}
+
+      restartPolicy: Always
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - {{ .Values.service.name }}
+              topologyKey: "kubernetes.io/hostname"
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - {{ .Values.service.affinity }}
+              topologyKey: "kubernetes.io/hostname"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.name }}
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - name: http2-grpc
+    port: {{ .Values.service.port.grpc }}
+    targetPort: {{ .Values.service.port.grpc }}
+  - name: http2-rest
+    port: {{ .Values.service.port.http2 }}
+    targetPort: {{ .Values.service.port.http2 }}
+  selector:
+    app: {{ .Values.service.name }}

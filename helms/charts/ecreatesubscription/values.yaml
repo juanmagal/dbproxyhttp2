@@ -1,0 +1,63 @@
+replicaCount: 4
+# hpa:
+#   replicas:
+#     min: 4
+#     max: 4
+#   target:
+#     cpu: 70
+resources:
+  requests:
+    cpu: 100m
+image:
+  name: eecreatesubscription
+  tag: freddie
+service:
+  name: eecreatesubscription
+  type: ClusterIP
+  port: 9002
+  affinity: dbproxy 
+env:
+  dbproxy:
+    name: dbproxy
+    port: 9002
+sidecars:
+  pmproxy:
+    image:
+      name: pmproxy
+      tag: latest
+    env:
+      grpcPort: 9100
+      prometheusPort: 9500
+  logproxy:
+    image:
+      name: sidecar_log
+      tag: latest
+    env:
+      port: 9060
+      level: 7
+  healthproxy:
+    image:
+      name: healthproxy
+      tag: latest
+    period: 3
+    initialDelay: 1
+    http:
+      port: 9400
+    grpc:
+      port: 9070
+global:
+  image:
+    repository: efrramo
+    pullPolicy: Always
+  istio:
+    enabled: "on-auto-inj" # Service mesh sidecar auto injection. Values=on-auto-inj|off
+    gateway:
+      istio: "eric-udm-traffic" # this is the istio-system gateway service.
+      udm: "eric-udm-gateway" # this is the specific UDM gateway.
+      port: 82 # this is the istio-system service port. will be used in the gateway as well.
+      host: "*" # this is the hosts that the virtual services will be able to serve.
+  upgradeStrategy:
+    type: Recreate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0

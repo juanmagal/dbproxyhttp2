@@ -1,0 +1,19 @@
+dependencies:
+- name: dbproxy
+  version: ~1.0
+  repository: alias:arm-udm-hss-helm
+  condition: dbproxy.enabled
+  tags:
+  - brianmay
+- name: eecreatesubscription
+  version: ~1.0
+  repository: alias:arm-udm-hss-helm
+  condition: eecreatesubscription.enabled
+  tags:
+  - freddie
+- name: udrsim
+  version: ~1.0
+  repository: alias:arm-udm-hss-helm
+  condition: udrsim.enabled
+  tags:
+  - brianmay

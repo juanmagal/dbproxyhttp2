@@ -1,0 +1,56 @@
+# Default values for udm-sim-umbrella.
+# Declare variables to be passed into your templates.
+tags:
+  edge: false
+  5g: false
+  4g: false
+  simulator: false
+  nrfagent: false
+  brianmay: false
+  freddie: true
+ 
+global:
+  image:
+    repository: efrramo
+    pullPolicy: Always
+  upgradeStrategy:
+    type: RollingUpdate # can be Recreate or RollingUpdate. In the latter, specify maxSurge and maxUnavailable
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  istio:
+    enabled: "on-auto-inj" # Service mesh sidecar auto injection. Values=on-auto-inj|off
+    gateway:
+      istio: "eric-udm-traffic" # this is the istio-system gateway service.
+      udm: "eric-udm-gateway" # this is the specific UDM gateway.
+      port: 82 # this is the istio-system service port. will be used in the gateway as well.
+      host: "*" # this is the hosts that the virtual services will be able to serve.
+sidecars:
+  pmproxy:
+    image:
+      name: pmproxy
+      tag: latest
+  logproxy:
+    image:
+      name: sidecar_log
+      tag: latest
+  healthproxy:
+    image:
+      name: healthproxy
+      tag: latest
+  oaivalidator:
+    image:
+      name: oaivalidator
+      tag: latest
+
+eecreatesubscription:
+  replicaCount: 4
+  resources: {}
+
+dbproxy:
+  replicaCount: 1
+  resources: {}
+
+udrsim:
+  replicaCount: 1
+  resources: {}

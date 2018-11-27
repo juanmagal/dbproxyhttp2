@@ -511,22 +511,46 @@ https://www.youtube.com/watch?v=V7ArJ1Ebd8c
 
 
 
-
-
-
-
-
-
-
-
-
-
 kubectl exec -it eric-udm-traffic-8pzrr -n istio-system -- /bin/bash
 
 
 curl http://localhost:15000/stats | grep dbproxy
 curl http://localhost:15000/config_dump > kkdvk
 curl -X POST http://localhost:15000/reset_counters
+
+
+Install Prometheus
+
+https://wiki.lmera.ericsson.se/wiki/PDU_UDM/UNIV/5G_Integration/ADP_Demo13
+
+
+helm install ./eric-adp-5g-udm --name eric-adp-5g-udm --set tags.eric-adp-common=false --set tags.eric-data-document-database-pg=false --set tags.eric-cm-mediator=false --set tags.eric-pm-server=true --set tags.eric-pm-bulk-reporter=false --set tags.eric-data-coordinator-zk=false --set tags.eric-data-message-bus-kf=false --set tags.eric-log-shipper=false --set tags.eric-data-search-engine=false --set tags.eric-data-visualizer-gf=false --set tags.eric-data-visualizer-kb=false --set tags.eric-fh-alarm-handler=false --set tags.eric-fh-snmp-alarm-provider=false --set tags.eric-dst-jg=false
+
+
+Poner como LoadBalancer
+
+Consultar en 
+
+http://172.18.18.20:31882/graph
+
+Todos los microservicios que publiquen metricas en prometheus tienen que tener esta sección en su template
+metadata:
+  name: {{ .Values.service.name }}
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+  annotations:
+    prometheus.io/path: "metrics"
+    prometheus.io/port: {{ .Values.sidecars.pmproxy.port.http | quote }}
+    prometheus.io/scrape: "true"
+
+En caso contrario hay que añadir una sección de este estilo en el values.yaml del prometheus
+
+
+      - job_name: eecreatesubscription
+        static_configs:
+          - targets:
+            - eecreatesubscription:9500
+
 
 
 

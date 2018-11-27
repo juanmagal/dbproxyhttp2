@@ -1,0 +1,35 @@
+replicaCount: 1
+# hpa:
+#   replicas:
+#     min: 4
+#     max: 4
+#   target:
+#     cpu: 15
+resources:
+  requests:
+    cpu: 100m
+image:
+  repository: efrramo
+  name: udrsim
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  name: udrsim
+  type: ClusterIP
+  port: 9082
+env:
+  tlsEnabledValue: 0
+  logLevel: 1
+global:
+  istio:
+    enabled: "off" # Service mesh sidecar auto injection. Values=on-auto-inj|off
+    gateway:
+      istio: "eric-udm-traffic" # this is the istio-system gateway service.
+      udm: "eric-udm-gateway" # this is the specific UDM gateway.
+      port: 82 # this is the istio-system service port. will be used in the gateway as well.
+      host: "*" # this is the hosts that the virtual services will be able to serve.
+  upgradeStrategy:
+    type: Recreate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0  

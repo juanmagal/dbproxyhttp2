@@ -1,0 +1,80 @@
+replicaCount: 1
+# hpa:
+#   replicas:
+#     min: 2
+#     max: 10
+#   target:
+#     cpu: 70
+resources:
+  requests:
+    cpu: 100m
+image:
+  name: dbproxy
+  tag: brian
+sidecars:
+  healthproxy:
+    image:
+      name: healthproxy
+      tag: latest
+    service:
+      name: healthproxy
+      period: 3
+      initialDelay: 5
+    port:
+      http: 9400
+      grpc: 9070
+    resources:
+      requests:
+        cpu: 10m
+  logproxy:
+    image:
+      name: sidecar_log
+      tag: latest
+    service:
+      name: logproxy
+    port:
+      grpc: 9060
+    resources:
+      requests:
+        cpu: 10m
+  oaivalidator:
+    image:
+      name: oaivalidator
+      tag: latest
+    service:
+      name: oaivalidator
+    port:
+      http: 9002
+    resources:
+      requests:
+        cpu: 10m
+service:
+  name: dbproxy
+  type: ClusterIP
+  port:
+    grpc: 9001
+    http2: 9002
+  affinity: udrsim    
+nrfagent:
+  discovery:
+    endpoint: http://eric-nrf-discovery:3002
+    topic: nrf-agent-udm
+env:
+  http2: 8088
+  simulator:
+    enabled: true
+    endpoint: http://udrsim:9082
+global:
+  image:
+    repository: efrramo
+    pullPolicy: IfNotPresent
+  upgradeStrategy:
+    type: Recreate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  istio:
+    enabled: 'off'
+  adp:
+    mb:
+      endpoint: eric-data-message-bus-kf:9092
